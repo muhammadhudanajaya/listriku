@@ -2,7 +2,7 @@
 window.DATA = {
   kodeKelas: ['IPA2026'],
   // Tempel URL Web App dari Google Apps Script di sini (lihat google-apps-script/PANDUAN-SHEET.md).
-  sheetURL: '',
+  sheetURL: 'https://script.google.com/macros/s/AKfycbxhX-rAgvCt1InGMPvWWbXHBMKIoVGVX2n3hr1FWsISiczz1WH4ivJjxMMZmPAXEZDm/exec',
   sheetToken: 'listriku-2026',
   pengembang: { nama: 'Muhammad Huda Najaya', nim: '260351860728', prodi: 'Pendidikan IPA', foto: 'assets/foto-pengembang.jpg' },
   cp: 'Peserta didik menganalisis gejala kemagnetan dan kelistrikan untuk menyelesaikan tantangan yang dihadapi dalam kehidupan sehari-hari termasuk pemanfaatan sumber energi listrik ramah lingkungan.',
