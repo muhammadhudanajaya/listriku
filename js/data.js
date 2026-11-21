@@ -2,7 +2,7 @@
 window.DATA = {
   kodeKelas: ['IPA2026'],
   // Tempel URL Web App dari Google Apps Script di sini (lihat google-apps-script/PANDUAN-SHEET.md).
-  sheetURL: 'https://script.google.com/macros/s/AKfycbxhX-rAgvCt1InGMPvWWbXHBMKIoVGVX2n3hr1FWsISiczz1WH4ivJjxMMZmPAXEZDm/exec',
+  sheetURL: '',
   sheetToken: 'listriku-2026',
   pengembang: { nama: 'Muhammad Huda Najaya', nim: '260351860728', prodi: 'Pendidikan IPA', foto: 'assets/foto-pengembang.jpg' },
   cp: 'Peserta didik menganalisis gejala kemagnetan dan kelistrikan untuk menyelesaikan tantangan yang dihadapi dalam kehidupan sehari-hari termasuk pemanfaatan sumber energi listrik ramah lingkungan.',
@@ -46,15 +46,25 @@ window.DATA = {
   ],
   kuisPG: [
     { id: 'k1', q: 'Dua lampu identik dirangkai seri dengan baterai 6 V. Tegangan pada setiap lampu adalah …', o: ['6 V', '3 V', '12 V', '2 V'], k: 1,
-      benar: 'Tepat! Tegangan 6 V terbagi sama ke dua lampu: 3 V.', salah: 'Belum tepat. Ingat lensa Tegangan: pada seri, tegangan turun bertahap di setiap lampu.' },
+      bahas: 'Pada rangkaian seri, tegangan baterai terbagi ke setiap lampu. Dua lampu identik mendapat bagian sama: 6 V ÷ 2 = 3 V. Ingat lensa Tegangan: warna berubah bertahap di setiap lampu.' },
     { id: 'k2', q: 'Pada rangkaian paralel dua cabang, arus pada cabang pertama 0,2 A dan arus total dari baterai 0,5 A. Arus pada cabang kedua adalah …', o: ['0,2 A', '0,5 A', '0,3 A', '0,7 A'], k: 2,
-      benar: 'Tepat! Arus total = jumlah arus cabang, jadi 0,5 A − 0,2 A = 0,3 A.', salah: 'Belum tepat. Arus total paralel adalah jumlah arus semua cabang.' },
+      bahas: 'Arus total paralel sama dengan jumlah arus semua cabang. Jadi arus cabang kedua = 0,5 A − 0,2 A = 0,3 A.' },
     { id: 'k3', q: 'Rangkaian lampu hias seri berisi 10 lampu kecil. Satu lampu kecil copot dari dudukannya. Yang terjadi adalah …', o: ['sembilan lampu lain menyala lebih terang', 'semua lampu padam', 'hanya lampu sebelum yang copot yang menyala', 'sembilan lampu lain menyala seperti biasa'], k: 1,
-      benar: 'Tepat! Pada seri hanya ada satu jalur, jadi satu lampu copot memutus seluruh rangkaian.', salah: 'Belum tepat. Ingat video pemantik: lampu hias seri padam semua saat satu bohlam dicabut.' }
-  ],
-  kuisEsai: [
-    { id: 'e1', q: 'Rani berkata, “Arus listrik habis dipakai oleh lampu, jadi arus setelah lampu lebih kecil daripada sebelum lampu.” Apakah pendapat Rani benar? Jelaskan dengan bukti dari lab 3D yang sudah kamu amati.' },
-    { id: 'e2', q: 'Budi memasang dua lampu identik secara seri dengan baterai 6 V. Kedua lampu tahan hingga 4,5 V. Jika Budi mengubah rangkaiannya menjadi paralel dengan baterai yang sama, apa yang akan terjadi pada lampu? Jelaskan alasannya.' }
+      bahas: 'Rangkaian seri hanya punya satu jalur. Satu lampu copot memutus jalur itu, sehingga elektron di seluruh rangkaian berhenti dan semua lampu padam, seperti lampu hias di video pemantik.' },
+    { id: 'k4', q: 'Saat lampu menyala, partikel yang bergerak di dalam kabel tembaga adalah …', o: ['elektron', 'proton', 'atom tembaga', 'cahaya'], k: 0,
+      bahas: 'Yang bergerak di dalam kabel logam adalah elektron bebas. Proton dan atom tembaga tetap di tempatnya. Kamu bisa melihatnya dengan lensa Elektron di lab 3D.' },
+    { id: 'k5', q: 'Dua lampu identik dirangkai seri dengan baterai. Kemudian lampu ketiga yang identik ditambahkan secara seri. Nyala lampu-lampu itu menjadi …', o: ['lebih terang', 'tetap sama', 'lebih redup', 'padam semua'], k: 2,
+      bahas: 'Tegangan baterai kini terbagi ke tiga lampu, sehingga tegangan tiap lampu lebih kecil dan arus juga mengecil. Akibatnya semua lampu lebih redup.' },
+    { id: 'k6', q: 'Dua lampu identik dirangkai paralel. Arus pada setiap lampu 0,25 A. Jika satu lampu dilepas, amperemeter di dekat baterai menunjukkan …', o: ['0 A', '0,5 A', '0,125 A', '0,25 A'], k: 3,
+      bahas: 'Sebelum dilepas, arus total = 0,25 A + 0,25 A = 0,5 A. Setelah satu lampu dilepas, tinggal satu cabang, sehingga arus total menjadi 0,25 A. Lampu yang tersisa tetap menyala seperti semula.' },
+    { id: 'k7', q: 'Untuk mengukur tegangan pada sebuah lampu, voltmeter harus dipasang …', o: ['paralel dengan lampu', 'seri dengan lampu', 'di antara dua baterai', 'tanpa dihubungkan ke rangkaian'], k: 0,
+      bahas: 'Voltmeter mengukur beda potensial antara dua ujung lampu, jadi kedua kakinya dipasang di ujung-ujung lampu (paralel). Amperemeterlah yang dipasang seri.' },
+    { id: 'k8', q: 'Dua lampu identik dengan baterai yang sama lebih terang jika dirangkai paralel daripada seri. Alasannya adalah …', o: ['elektron di rangkaian paralel lebih banyak jenisnya', 'arus di rangkaian paralel mengalir lebih lambat', 'lampu pada rangkaian paralel lebih baru', 'setiap lampu paralel mendapat tegangan penuh dari baterai'], k: 3,
+      bahas: 'Pada paralel, setiap lampu terhubung langsung ke kedua kutub baterai sehingga mendapat tegangan penuh. Pada seri, tegangan itu dibagi, sehingga lampu lebih redup.' },
+    { id: 'k9', q: 'Saat elektron melewati filamen lampu, yang terjadi adalah …', o: ['elektron habis di dalam filamen', 'elektron berubah menjadi cahaya', 'energi listrik diubah menjadi cahaya dan panas, sedangkan elektron tetap mengalir', 'arus berhenti di dalam filamen'], k: 2,
+      bahas: 'Elektron tidak habis dan tidak berubah menjadi cahaya. Yang berubah adalah energinya: energi listrik menjadi cahaya dan panas di filamen, lalu elektron terus mengalir kembali ke baterai. Lihat lensa Energi dan Zoom.' },
+    { id: 'k10', q: 'Di rumah Sinta, lampu kamar dimatikan tetapi lampu dapur tetap menyala. Hal ini menunjukkan bahwa lampu-lampu di rumah Sinta …', o: ['memakai baterai yang berbeda-beda', 'hanya dialiri arus ke dapur', 'dirangkai seri', 'dirangkai paralel'], k: 3,
+      bahas: 'Pada rangkaian paralel, setiap lampu punya cabang dan sakelarnya sendiri. Mematikan satu cabang tidak memutus cabang lain, jadi lampu dapur tetap menyala.' }
   ],
   predict: [
     { id: 'p1', mode: 'seri', q: 'Dua lampu identik dirangkai seri. Dibanding satu lampu saja, nyalanya …', o: ['Lebih terang', 'Sama terang', 'Lebih redup'], k: 2,

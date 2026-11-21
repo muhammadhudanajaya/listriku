@@ -66,10 +66,11 @@
       'Paralel: nyala': tb.par_nyala || '', 'Paralel: arus (A)': tb.par_arus || '', 'Paralel: V tiap lampu': tb.par_volt || '', 'Paralel: 1 lampu dilepas': tb.par_lepas || '',
       'Aktivitas lab': lab ? `${lab.aksi} aksi, ${lab.rusak} kerusakan, amperemeter dicoba di ${Object.keys(lab.posA || {}).length} posisi` : '',
       'Penjelasan (Explain)': (p.explain || {}).teks || '', 'Post-test': post == null ? '' : post, 'N-Gain': ng, 'Kategori N-Gain': kat,
-      'Kuis PG (benar)': p.kuis && p.kuis.done ? `${p.kuis.skor}/${D.kuisPG.length}` : '', 'Esai 1': p.kuis && p.kuis.done ? p.kuis.esai.e1 : '', 'Esai 2': p.kuis && p.kuis.done ? p.kuis.esai.e2 : '',
+      'Kuis: percobaan pertama': p.kuis && p.kuis.first != null ? p.kuis.first * 10 : '', 'Kuis: nilai terakhir': p.kuis && p.kuis.done ? p.kuis.skor * 10 : '', 'Kuis: jumlah percobaan': p.kuis && p.kuis.tries ? p.kuis.tries : '',
       'Status': status
     };
     const butir = ['pretest', 'posttest'].filter(k => p[k] && p[k].done).map(k => ({ tes: k === 'pretest' ? 'Pre-test' : 'Post-test', items: D.tes.map(q => p[k].ans[q.id] === q.k ? 1 : 0), skor: p[k].skor }));
+    if (p.kuis && p.kuis.firstAns) butir.push({ tes: 'Kuis', items: D.kuisPG.map(q => p.kuis.firstAns[q.id] === q.k ? 1 : 0), skor: p.kuis.first * 10 });
     return { token: D.sheetToken, siswa: { kelas: u.kelas, absen: u.absen, nama: u.nama, jalur: S.mode === 'A' ? 'Asesmen' : 'Mandiri' }, rekap, butir, jenis: S.lastEvent, waktu: new Date().toISOString() };
   }
   function flush() {
@@ -267,7 +268,7 @@ ${[['home', 'Menu Utama', 'Kembali ke daftar langkah'], ['help', 'Petunjuk', 'Me
     const guru = `<div class="grid2"><div class="card"><h2>Menggunakan Jalur Asesmen</h2><ol style="margin:8px 0 0 20px;line-height:1.9"><li>Bagikan tautan web dan <b>Kode Kelas</b> kepada siswa.</li><li>Siswa mengisi identitas dan kode, lalu mengerjakan Pre-test.</li><li>Siswa belajar dengan alur POE (±60 menit).</li><li>Siswa mengerjakan Post-test di akhir pertemuan.</li><li>Pre-test dan Post-test hanya dapat dikerjakan 1 kali.</li></ol>
 <div class="hint" style="margin-top:12px"><b>Kode Kelas</b> tercantum di Buku Panduan Guru.</div></div>
 <div class="card"><h2>Melihat jawaban siswa</h2><ol style="margin:8px 0 0 20px;line-height:1.9"><li>Buka Google Sheet rekap (tautan di Buku Panduan Guru).</li><li>1 baris = 1 siswa, urut per kelas dan nomor absen.</li><li>Kolom berisi dugaan awal, prediksi, pengamatan, penjelasan, skor Pre-test, Post-test, dan N-Gain.</li><li>Kolom <b>Status</b> menunjukkan langkah terakhir siswa.</li></ol>
-<div class="hint" style="margin-top:12px;border-color:var(--teal);background:#E5F5F3">Tanpa kode, siswa masuk Jalur Belajar Mandiri dan hanya skor Kuis Latihan yang tercatat.</div></div></div>`;
+<div class="hint" style="margin-top:12px;border-color:var(--teal);background:#E5F5F3">Tanpa kode, siswa masuk Jalur Belajar Mandiri dan skor Kuis Latihan (10 soal) yang tercatat.</div></div></div>`;
     const o = { active: 'petunjuk', crumb: 'Petunjuk', title: 'Cara Menggunakan Media', back: 'menu', next: { ok: true, t: 'Ke Menu', fn: () => go('menu') },
       body: `<div class="tabs" role="tablist"><button class="tab ${tab === 'siswa' ? 'on' : ''}" data-tab="siswa" role="tab" aria-selected="${tab === 'siswa'}">${I('user')}Petunjuk Siswa</button><button class="tab ${tab === 'guru' ? 'on' : ''}" data-tab="guru" role="tab" aria-selected="${tab === 'guru'}">${I('teacher')}Petunjuk Guru</button></div>${tab === 'siswa' ? siswa : guru}` };
     $app.innerHTML = shell(o); bindShell(o);
@@ -516,37 +517,40 @@ ${show ? `<div class="stack" style="margin-top:16px">${D.tes.map((q, i) => { con
   };
 
   V.kuis = function () {
-    const p = S.p.kuis = S.p.kuis || { pg: {}, esai: {}, done: false };
-    const n = D.kuisPG.length;
-    const qi = V._kq == null ? (p.done ? n + 1 : 0) : V._kq;
+    const p = S.p.kuis = S.p.kuis || { pg: {}, done: false };
+    const n = D.kuisPG.length, Q = D.kuisPG;
+    const skorNow = () => Q.filter(x => p.pg[x.id] === x.k).length;
+    const qi = V._kq == null ? (p.done ? n : Math.max(0, Q.findIndex(x => p.pg[x.id] == null))) : V._kq;
     let body;
     if (qi < n) {
-      const q = D.kuisPG[qi], a = p.pg[q.id], answered = a != null;
-      const skor = D.kuisPG.filter(x => p.pg[x.id] === x.k).length;
-      body = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><b class="muted">Soal ${qi + 1} dari ${n + D.kuisEsai.length}</b><span class="small" style="font-weight:700">Skor pilihan ganda: ${skor}/${n}</span></div>
+      const q = Q[qi], a = p.pg[q.id], answered = a != null, ok = a === q.k;
+      const last = qi === n - 1;
+      body = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px"><b class="muted">Soal ${qi + 1} dari ${n}</b><span class="small" style="font-weight:700">Benar: ${skorNow()}/${n}</span></div>
+<div style="height:6px;background:#E3E7EF;border-radius:4px;margin-bottom:14px;overflow:hidden"><div style="height:100%;width:${(qi + (answered ? 1 : 0)) / n * 100}%;background:var(--teal)"></div></div>
 <div class="card"><p style="font-weight:700;font-size:17px">${esc(q.q)}</p>${q.o.map((t, oi) => `<button class="opt ${answered ? (oi === q.k ? 'ok' : oi === a ? 'no' : '') : ''}" data-oi="${oi}" ${answered ? 'disabled' : ''}><span class="r"></span><span class="lt">${L[oi]}.</span><span>${esc(t)}</span></button>`).join('')}
-${answered ? `<div class="fb ${a === q.k ? 'ok' : 'no'}"><b>${a === q.k ? '' : ''}</b>${esc(a === q.k ? q.benar : q.salah)}</div>` : ''}</div>
-<div style="text-align:right;margin-top:14px"><button class="btn teal" id="kn" ${answered ? '' : 'disabled style="opacity:.45"'}>Soal Berikutnya${I('right')}</button></div>`;
-    } else if (qi === n) {
-      body = `<div style="margin-bottom:12px"><b class="muted">Soal ${n + 1}–${n + D.kuisEsai.length} dari ${n + D.kuisEsai.length} · Esai singkat</b></div><div class="stack">${D.kuisEsai.map((e, i) => `<div class="card"><label class="f" for="${e.id}">${i + 4}. ${esc(e.q)}</label><textarea class="inp" id="${e.id}" rows="4" placeholder="Tulis jawabanmu ...">${esc(p.esai[e.id] || '')}</textarea></div>`).join('')}</div><div class="err" id="e_es"></div>
-<div style="text-align:right;margin-top:14px"><button class="btn teal" id="kirim">${I('send')}Kirim Jawaban</button></div>`;
+${answered ? `<div class="fb ${ok ? 'ok' : 'no'}"><b>${ok ? 'Tepat!' : `Belum tepat. Jawaban yang benar: ${L[q.k]}. ${esc(q.o[q.k])}.`}</b><div style="margin-top:6px"><b>Pembahasan:</b> ${esc(q.bahas)}</div></div>` : '<p class="small muted" style="margin-top:10px">Pilih satu jawaban. Pembahasan langsung muncul setelah kamu memilih.</p>'}</div>
+<div style="display:flex;justify-content:space-between;margin-top:14px;gap:10px">${qi > 0 ? `<button class="btn sec" id="kp">${I('left')}Sebelumnya</button>` : '<span></span>'}<button class="btn teal" id="kn" ${answered ? '' : 'disabled style="opacity:.45"'}>${last ? 'Lihat Hasil Kuis' : 'Soal Berikutnya'}${I('right')}</button></div>`;
     } else {
-      const skor = D.kuisPG.filter(x => p.pg[x.id] === x.k).length;
-      body = `<div class="card" style="max-width:640px"><h2>Kuis selesai!</h2><p style="font-size:30px;font-weight:800;margin:6px 0">${skor}/${n} <span class="small muted" style="font-weight:600">pilihan ganda benar</span></p><p class="small muted">Jawaban esaimu sudah tersimpan dan akan dibaca gurumu.</p>
+      const skor = p.skor != null ? p.skor : skorNow();
+      const salah = Q.filter(x => p.pg[x.id] !== x.k);
+      body = `<div class="card" style="max-width:720px"><h2>Kuis selesai!</h2><p style="font-size:30px;font-weight:800;margin:6px 0">${skor * 10} <span class="small muted" style="font-weight:600">nilai · ${skor} dari ${n} soal benar</span></p>
+<p class="small muted">${skor === n ? 'Luar biasa, semua benar! Kamu sudah memahami rangkaian seri dan paralel.' : skor >= 7 ? 'Bagus! Baca lagi pembahasan soal yang masih salah di bawah ini.' : 'Tidak apa-apa. Baca pembahasan di bawah, coba lagi lensa di tahap Explain, lalu ulangi kuisnya.'}</p>
+${salah.length ? `<div class="stack" style="margin-top:12px">${salah.map(q => `<div class="fb no" style="margin:0"><b>Soal ${Q.indexOf(q) + 1}.</b> ${esc(q.q)}<div style="margin-top:4px">Jawaban benar: <b>${L[q.k]}. ${esc(q.o[q.k])}</b></div><div style="margin-top:4px">${esc(q.bahas)}</div></div>`).join('')}</div>` : ''}
 <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><button class="btn sec" id="ulangk">${I('reset')}Ulangi Kuis</button><button class="btn pri" data-go="menu">Ke Menu</button></div></div>`;
     }
     const o = { active: 'kuis', crumb: `Langkah ${numOf('kuis')} · Belajar Mandiri`, title: 'Kuis Latihan: Cek Pemahamanmu', body, next: { ok: !!p.done, t: 'Ke Menu', fn: () => go('menu'), why: 'Selesaikan kuis dulu.' } };
     $app.innerHTML = shell(o); bindShell(o);
-    $app.querySelectorAll('[data-oi]').forEach(b => b.onclick = () => { p.pg[D.kuisPG[qi].id] = +b.dataset.oi; save(); render(); });
-    const kn = document.getElementById('kn'); if (kn) kn.onclick = () => { V._kq = qi + 1; render(); };
-    const ki = document.getElementById('kirim'); if (ki) ki.onclick = () => {
-      const vals = D.kuisEsai.map(e => document.getElementById(e.id).value.trim());
-      if (vals.some(v => v.length < 10)) { document.getElementById('e_es').textContent = 'Jawab kedua soal esai, minimal satu kalimat.'; return; }
-      D.kuisEsai.forEach((e, i) => p.esai[e.id] = vals[i]);
-      p.done = true; p.skor = D.kuisPG.filter(x => p.pg[x.id] === x.k).length; save(); sync('kuis', { pg: p.pg, esai: p.esai, skor: p.skor }); V._kq = n + 1; render();
+    $app.querySelectorAll('[data-oi]').forEach(b => b.onclick = () => { p.pg[Q[qi].id] = +b.dataset.oi; V._kq = qi; save(); render(); });
+    const kp = document.getElementById('kp'); if (kp) kp.onclick = () => { V._kq = qi - 1; render(); };
+    const kn = document.getElementById('kn'); if (kn) kn.onclick = () => {
+      if (qi < n - 1) { V._kq = qi + 1; render(); return; }
+      p.skor = skorNow(); p.tries = (p.tries || 0) + 1;
+      if (p.first == null) { p.first = p.skor; p.firstAns = Object.assign({}, p.pg); }
+      p.done = true; save(); sync('kuis', { skor: p.skor }); V._kq = n; render();
     };
-    const ul = document.getElementById('ulangk'); if (ul) ul.onclick = () => { p.pg = {}; V._kq = 0; save(); render(); };
+    const ul = document.getElementById('ulangk'); if (ul) ul.onclick = () => { p.pg = {}; p.skor = null; V._kq = 0; save(); render(); };
   };
+
 
   V.referensi = function () {
     const g = D.pengembang;
